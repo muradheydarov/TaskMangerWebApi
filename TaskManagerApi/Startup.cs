@@ -48,7 +48,8 @@ namespace TaskManagerApi
                 app.UseDeveloperExceptionPage();
             }
             //app.UseCors("MyBlogPolicy");
-            app.UseMvc();            
+            app.UseMvc();
+            app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "TaskManagerApi");
