@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using TaskManagerApi.Model;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TaskManagerApi.Controllers
 {
+    //[Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
@@ -18,19 +20,7 @@ namespace TaskManagerApi.Controllers
         public AdminController(TaskManagerContext taskManager)
         {
             _db = taskManager;
-        }
-
-        //api/admin/createuser?username=""
-        [HttpGet]
-        [Route("createuser")]
-        public async Task<IActionResult> CreateUser([FromQuery(Name = "username")] string username)
-        {
-            User user = new User() { Username = username };
-            await _db.Users.AddAsync(user);
-            await _db.SaveChangesAsync();
-
-            return Ok("user saved successfully");
-        }
+        }       
 
         //api/createdocument
         [HttpPost]
@@ -43,9 +33,21 @@ namespace TaskManagerApi.Controllers
                 ImportExport = documentInfoBody.ImportExport,
                 GbNumber = documentInfoBody.GbNumber,
                 GbState = documentInfoBody.GbState,
-                User = _db.Users.FirstOrDefault(x => x.Username == documentInfoBody.UserName)
+                User = _db.Users.FirstOrDefault(x => x.Username == documentInfoBody.UserName.ToLower())
             };
             await _db.DocumentInfos.AddAsync(documentInfo);
+            await _db.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("deletedocument/{id}")]
+        public async Task<IActionResult> DeleteDocument(int id)
+        {            
+            var document = await _db.DocumentInfos                                        
+                                        .FirstOrDefaultAsync(x => x.Id == id);
+            document.Active = false;
             await _db.SaveChangesAsync();
 
             return Ok();
@@ -54,7 +56,7 @@ namespace TaskManagerApi.Controllers
         //api/users
         [HttpGet]
         [Route("users")]
-        public async Task<JsonResult> GetDocuments()
+        public async Task<JsonResult> GetUsers()
         {
             var jsonResult = await _db.Users
                                         .Include(x => x.DocumentInfos)

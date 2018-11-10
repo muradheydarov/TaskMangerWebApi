@@ -19,7 +19,7 @@ namespace TaskManagerApi.Controllers
         [HttpGet]
         [Route("editstatus")]
         public async Task<IActionResult> CreateUser([FromQuery] int id, string GBState)
-        {            
+        {
             var document = await _db.DocumentInfos.FirstOrDefaultAsync(x => x.Id == id);
             document.GbState = GBState;
             await _db.SaveChangesAsync();
@@ -28,13 +28,21 @@ namespace TaskManagerApi.Controllers
         }
 
         //api/getuserinfo?username=""
-        [HttpGet()]
+        [HttpGet]
         [Route("getuserinfo")]
         public async Task<JsonResult> GetUser([FromQuery(Name = "username")] string username)
         {
+            var usernameLowerCare = username.ToLower();
             var jsonResult = await _db.Users
                                         .Include(x => x.DocumentInfos)
-                                        .FirstOrDefaultAsync(x => x.Username==username);
+                                        .SingleOrDefaultAsync(x => x.Username == usernameLowerCare);
+
+            if (jsonResult == null)
+            {
+                User user = new User() { Username = usernameLowerCare };
+                await _db.Users.AddAsync(user);
+                await _db.SaveChangesAsync();
+            }
 
             return new JsonResult(jsonResult);
         }

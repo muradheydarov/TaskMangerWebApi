@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using TaskManagerApi.Model;
 
 namespace TaskManagerApi
@@ -23,6 +26,18 @@ namespace TaskManagerApi
         {
             services.AddMvc().AddJsonOptions(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddDbContext<TaskManagerContext>(item => item.UseSqlServer(Configuration.GetConnectionString("AzureConnection")));
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(option=>
+            {
+                option.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = "taskmanagerapi",
+                    ValidAudience = "taskmanagerapi",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetSection("SecurityKey").Value))
+                };
+            });
             services.AddSwaggerGen(s =>
             {
                 s.SwaggerDoc("v1", new Swashbuckle.AspNetCore.Swagger.Info()
@@ -48,6 +63,7 @@ namespace TaskManagerApi
                 app.UseDeveloperExceptionPage();
             }
             //app.UseCors("MyBlogPolicy");
+            app.UseAuthentication();
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUI(c =>

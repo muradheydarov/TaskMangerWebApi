@@ -16,6 +16,7 @@ namespace TaskManagerApi.Model
         public User User { get; set; }
         public string ImportExport { get; set; }
         public int GbNumber { get; set; }
-        public string GbState { get; set; }
+        public string GbState { get; set; }        
+        public bool Active { get; set; }
     }
 }

@@ -24,6 +24,10 @@ namespace TaskManagerApi.Model
             modelBuilder.Entity<User>()
                 .HasIndex(e => e.Username)
                 .IsUnique();
+
+            modelBuilder.Entity<DocumentInfo>()
+                .Property(p => p.Active)
+                .HasDefaultValue(true);
         }
 
         public virtual DbSet<User> Users { get; set; }
