@@ -27,18 +27,28 @@ namespace TaskManagerApi.Controllers
         [Route("createdocument")]
         public async Task<IActionResult> CreateDocument([FromBody] DocumentInfoFromBody documentInfoBody)
         {
-            DocumentInfo documentInfo = new DocumentInfo()
-            {
-                SN = documentInfoBody.SN,
-                ImportExport = documentInfoBody.ImportExport,
-                GbNumber = documentInfoBody.GbNumber,
-                GbState = documentInfoBody.GbState,
-                User = _db.Users.FirstOrDefault(x => x.Username == documentInfoBody.UserName.ToLower())
-            };
-            await _db.DocumentInfos.AddAsync(documentInfo);
-            await _db.SaveChangesAsync();
+            var usernameLowerCare = documentInfoBody.UserName.ToLower();
+            var jsonResult = await _db.Users                                        
+                                        .SingleOrDefaultAsync(x => x.Username == usernameLowerCare);
 
-            return Ok();
+            if (jsonResult!=null)
+            {
+                DocumentInfo documentInfo = new DocumentInfo()
+                {
+                    SN = documentInfoBody.SN,
+                    ImportExport = documentInfoBody.ImportExport,
+                    GbNumber = documentInfoBody.GbNumber,
+                    GbState = documentInfoBody.GbState,
+                    User = _db.Users.FirstOrDefault(x => x.Username == documentInfoBody.UserName.ToLower())
+                };
+                await _db.DocumentInfos.AddAsync(documentInfo);
+                await _db.SaveChangesAsync();
+
+                return Ok();
+            }
+            
+            return BadRequest("User not exist");
+            
         }
 
         [HttpPost]
@@ -60,6 +70,20 @@ namespace TaskManagerApi.Controllers
         {
             var jsonResult = await _db.Users
                                         .Include(x => x.DocumentInfos)
+                                        .ToListAsync();
+
+            return new JsonResult(jsonResult);
+        }
+
+        /// <summary>
+        /// get all documents
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("documents")]
+        public async Task<JsonResult> GetDocuments()
+        {
+            var jsonResult = await _db.DocumentInfos                                        
                                         .ToListAsync();
 
             return new JsonResult(jsonResult);
