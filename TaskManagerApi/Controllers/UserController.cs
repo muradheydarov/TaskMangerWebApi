@@ -18,7 +18,7 @@ namespace TaskManagerApi.Controllers
         //api/editstatus
         [HttpGet]
         [Route("editstatus")]
-        public async Task<IActionResult> CreateUser([FromQuery] int id, string GBState)
+        public async Task<IActionResult> EditDocumentStatus([FromQuery] int id, string GBState)
         {
             var document = await _db.DocumentInfos.FirstOrDefaultAsync(x => x.Id == id);
             document.GbState = GBState;

@@ -51,7 +51,7 @@ namespace TaskManagerApi.Controllers
             
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("deletedocument/{id}")]
         public async Task<IActionResult> DeleteDocument(int id)
         {            
